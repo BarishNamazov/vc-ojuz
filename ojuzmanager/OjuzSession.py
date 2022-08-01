@@ -1,3 +1,4 @@
+from curses import raw
 import aiohttp
 from bs4 import BeautifulSoup
 
@@ -91,6 +92,14 @@ class OjuzSession:
             'Referer': submit_url
         }
         req = await self.session.post(submit_url, data=submit_data, headers=submit_headers)
+
+        if str(req.url).startswith("https://oj.uz/login"): # log in issue, maybe session timed out?
+            self.logged_in = False
+            if attempt_login:
+                return await self.submit_solution(problem_url, raw_code, attempt_login)
+            else:
+                return None
+        
         return req.url
 
 
