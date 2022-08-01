@@ -1,6 +1,7 @@
 """
 This server similar/same purposes as OjuzSession.py but requests are synchronously made.
 Not used but keeping here in case anybody wants to take a look.
+If you want to run this file, run: `pip install requests`.
 """
 from requests import Session
 from bs4 import BeautifulSoup
