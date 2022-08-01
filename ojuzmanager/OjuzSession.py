@@ -95,12 +95,20 @@ class OjuzSession:
 
 
     async def get_submission_summary(self, submission_id):
-        """Gets submission summary given submission_id"""
+        """Gets submission summary given submission_id
+        
+        submission_id (string): id of the submission
+
+        return (dict): a dictionary containing the keys 'compilation_message',
+        'evaluating_subtask_order', 'full_score', 'max_execution_time', 'max_memory',
+        'score', 'text'.
+        """
 
         if not self.session or self.session.closed:
             await self.start_session()
         
         summary_url = "https://oj.uz/submission/summary/1"
+        # this endpoint requires a CSRF token, so we get a random one
         summary_data = {
             'submission_id': submission_id,
             OjuzSession.csrf_token_name: await self.get_csfr_token("https://oj.uz/problem/submit/APIO13_interference"),
@@ -112,6 +120,11 @@ class OjuzSession:
         req = await self.session.post(summary_url, data=summary_data, headers=summary_header)
         return await req.json()
     
+    async def get_submission_details_table(self, submission_id):
+        submission_url = f'https://oj.uz/submission/{submission_id}'
+        soup = BeautifulSoup(await self.get_html(submission_url), 'html.parser')
+        return str(soup.find(id="submission_details"))
+
     async def get_html(self, url):
         """GETs HTML content of given url with the current session
         
