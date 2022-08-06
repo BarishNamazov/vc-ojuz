@@ -1,4 +1,3 @@
-from curses import raw
 import aiohttp
 from bs4 import BeautifulSoup
 

@@ -1,8 +1,7 @@
+from __future__ import annotations
 from ojuzmanager import accounts
 from ojuzmanager.OjuzSession import OjuzSession
-import aiohttp
 import asyncio
-from typing import int, str, List, Dict
 
 class OjuzManagerException(Exception):
     pass
@@ -15,8 +14,8 @@ class OjuzManager:
     """
 
     def __init__(self) -> None:
-        self.logged_sessions: List[OjuzSession] = []
-        self.username_to_session: Dict[str, OjuzSession] = {}
+        self.logged_sessions: list[OjuzSession] = []
+        self.username_to_session: dict[str, OjuzSession] = {}
         self.solution_number: int = 0 # used for indexing
     
     async def initialize_accounts(self) -> None:
@@ -41,6 +40,11 @@ class OjuzManager:
             raise OjuzManagerException("Could not login with any of the specified accounts!")
     
         print("The following usernames logged in and are ready to use", logged_usernames)
+
+    async def close_sessions(self):
+        await asyncio.gather(*[session.close_session() for session in self.logged_sessions])
+        self.username_to_session = {}
+        self.solution_number = 0
     
     async def submit_solution(self, problem_url, raw_code):
         active_sessions = len(self.logged_sessions)
