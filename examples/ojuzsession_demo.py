@@ -3,7 +3,7 @@ from ojuzmanager.OjuzSession import OjuzSession
 import asyncio
 
 username, password = ojuz_accounts[0]
-SUBMIT_SOLUTION = True # change this to True if you want this code to submit solution
+SUBMIT_SOLUTION = False # change this to True if you want this code to submit solution
 
 async def main():
     # even though test_submission.cpp is in the same directory as this file

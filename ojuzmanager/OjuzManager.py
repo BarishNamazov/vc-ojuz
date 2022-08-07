@@ -1,7 +1,11 @@
 from __future__ import annotations
-from ojuzmanager import accounts
-from ojuzmanager.OjuzSession import OjuzSession
 import asyncio
+import logging
+from ojuzmanager import ojuz_accounts, debug
+from ojuzmanager.OjuzSession import OjuzSession
+
+logger = logging.getLogger("ojuzmanager.ojuzmanager")
+logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
 class OjuzManagerException(Exception):
     pass
@@ -20,7 +24,7 @@ class OjuzManager:
     
     async def initialize_accounts(self) -> None:
         login_tasks = []
-        for username, password in accounts:
+        for username, password in ojuz_accounts:
             ojuz_session = OjuzSession(username, password)
             self.username_to_session[username] = ojuz_session
 
@@ -30,7 +34,7 @@ class OjuzManager:
 
         await asyncio.gather(*login_tasks)
         logged_usernames = []
-        for username, password in accounts:
+        for username, password in ojuz_accounts:
             ojuz_session = self.username_to_session[username]
             if ojuz_session.logged_in:
                 self.logged_sessions.append(ojuz_session)
@@ -39,17 +43,19 @@ class OjuzManager:
         if not self.logged_sessions:
             raise OjuzManagerException("Could not login with any of the specified accounts!")
     
-        print("The following usernames logged in and are ready to use", logged_usernames)
+        logger.info(f"Ojuzmanager initialized, the following usernames logged in and are ready to use: {logged_usernames}")
 
     async def close_sessions(self):
         await asyncio.gather(*[session.close_session() for session in self.logged_sessions])
         self.username_to_session = {}
         self.solution_number = 0
+        logger.info(f"Ojuzmanager closing all sessions")
     
     async def submit_solution(self, problem_url, raw_code):
         active_sessions = len(self.logged_sessions)
         lru_session = self.logged_sessions[self.solution_number % active_sessions]
         self.solution_number += 1 # concurrency-safe to write this before following line
+        logger.info(f"Ojuz manager submitted {self.solution_number}th solution with session={lru_session}")
         return await lru_session.submit_solution(problem_url, raw_code)
     
     async def get_submission_summary(self, submission_id):

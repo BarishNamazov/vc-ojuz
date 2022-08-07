@@ -1,5 +1,10 @@
 import aiohttp
+import logging
 from bs4 import BeautifulSoup
+from ojuzmanager import debug
+
+logger = logging.getLogger("ojuzmanager.ojuzsession")
+logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
 class OjuzSession:
     """An abstraction for submitting oj.uz solutions given user credentials.
@@ -21,7 +26,10 @@ class OjuzSession:
     
     async def start_session(self):
         self.session = aiohttp.ClientSession()
+        logger.info(f"Ojuz session started: {self.session}")
+    
     async def close_session(self):
+        logger.info(f"Ojuz session closed: {self.session}")
         await self.session.close()
 
     async def get_csfr_token(self, url):
@@ -54,7 +62,8 @@ class OjuzSession:
             'Referer': login_url # referer for login is itself
         }
         req = await self.session.post(login_url, data=login_data, headers=login_headers)
-        self.logged_in = 'Sign out' in await req.text()            
+        self.logged_in = 'Sign out' in await req.text()
+        logger.info(f"Ojuz session logging in attempt: {self.session} login={self.logged_in}")
         return self.logged_in
     
     async def attempt_multiple_logins(self, attempts):
@@ -99,6 +108,7 @@ class OjuzSession:
             else:
                 return None
         
+        logger.info(f"Ojuz session {self.session} submitted solution URL={req.url}")
         return req.url
 
 
