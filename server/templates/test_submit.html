@@ -1,19 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Submit to Ojuz</title>
 </head>
+
 <body>
-    <form action="" method="post">
-        <p>Problem URL:</p> 
-        <input type="text" name="problem_url" value="{{form["problem_url"]}}"/>
+    <form action="" method="post" id="form">
+        <p>Problem URL:</p>
+        <input id="problem_url" type="text" name="problem_url" />
         <p>Solution code:</p>
-        <textarea name="solution_code">{{form["solution_code"]}}</textarea>
-        <input type="submit" value="Submit"/>
+        <textarea id="solution_code" name="solution_code"></textarea>
+        <input type="submit" value="Submit" />
     </form>
-    {% if submission_url %} <a href="{{submission_url}}">Click</a> {% endif %}
 </body>
+<script>
+    window.post = function (url, data) {
+        return fetch(url, { method: "POST", headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+    }
+    const form = document.getElementById('form');
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        post("submit", { 
+            "problem_url": document.getElementById("problem_url").value, 
+            "solution_code": document.getElementById("solution_code").value }
+        )
+        .then(res => res.json())
+        .then(res => console.log(res));
+    });
+
+</script>
+
 </html>

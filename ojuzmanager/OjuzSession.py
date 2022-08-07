@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import logging
 from bs4 import BeautifulSoup
 from ojuzmanager import debug
@@ -100,16 +101,23 @@ class OjuzSession:
             'Referer': submit_url
         }
         req = await self.session.post(submit_url, data=submit_data, headers=submit_headers)
+        submission_url = str(req.url)
 
-        if str(req.url).startswith("https://oj.uz/login"): # log in issue, maybe session timed out?
+        if submission_url.startswith("https://oj.uz/login"): # log in issue, maybe session timed out?
             self.logged_in = False
             if attempt_login:
                 return await self.submit_solution(problem_url, raw_code, attempt_login)
             else:
                 return None
         
+        # TODO FIX this! this is a bad workaround!
+        if submission_url.startswith("https://oj.uz/problem/submit"): # oj.uz blocked the submission!
+            logger.warn("oj.uz blocked the submission!")
+            await asyncio.sleep(10) # wait 10 seconds
+            return await self.submit_solution(problem_url, raw_code, attempt_login) 
+
         logger.info(f"Ojuz session {self.session} submitted solution URL={req.url}")
-        return req.url
+        return submission_url
 
 
     async def get_submission_summary(self, submission_id):
